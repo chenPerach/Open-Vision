@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 class Sliders:
     '''
-    this 'helperClass' is a simple class disgnd to
+    this 'Sliders' is a simple class disgnd to
     abstarct the rigorous creation process of the trackbars away from the user
 
     this class also handles the saving of data to a json file
