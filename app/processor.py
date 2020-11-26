@@ -20,6 +20,9 @@ class process:
     
     def run(self):
         if (self.using_cam):
+            if(not self.cam.is_open()):
+                print("cam closed. waiting")
+                return # wait until the camera is opened
             img = self.cam.read()
         else:
             img = self.image_fetcher.read() 
