@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import math
 
-tan_frame = math.tan(math.radians(fov))
 tm = 0.325
+fov = 30
 class process:
     def __init__(self,path,using_camera = True):
         self.sliders = Sliders(isGUI=True,path = path)
@@ -42,7 +42,7 @@ class process:
         mask_img = cv2.inRange(hsv_img,lower,upper)
         bit_img = cv2.bitwise_and(img,img,mask = mask_img)
 
-        img_width,img_height = img.shape
+        img_width,img_height,_ = img.shape
 
         contours, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
@@ -80,9 +80,11 @@ class process:
             # draw debug stuff
             cv2.line(bit_img,(int(collision_point.x),int(0)),(int(collision_point.x),int(img_height)),(255,0,0),2)
 
-            angles = measure.measure_angle(collision_point,(img_width,img_height),(self.cam.fov,self.cam.fov))
-            
-            results.append((angles,))
+            angles = measure.measure_angle(collision_point,(img_width,img_height),(fov,fov))
+            distances = measure.get_distance(vector(x_1+w_1,y_1),vector(x_2,y_2),(img_width,img_height),
+            (fov,fov),tm,angles)
+
+            results.append((angles,distances))
 
         return {
             "images": [
