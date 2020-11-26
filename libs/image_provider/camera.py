@@ -4,7 +4,11 @@ import os
 import math
 import json
 defult_settings = {
-
+    "size": [420,320],
+    "brightness": 100,
+    "contrast": 100,
+    "saturation":100,
+    "gain":100,
 }
 class camera:
     """
@@ -23,10 +27,12 @@ class camera:
 
     def updateSettings(self,settings):
         self.settings_manager.updateSettings(settings)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,settings["size"][0])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,settings["size"][0])
 
     def close(self):
         self.settings_manager.saveSettings()
-        self.cap.cl
+        self.cap.release()
 class imagefetcher:
     '''
     imagefetcher class is a small class created to get images out of a directory
@@ -50,10 +56,7 @@ class imagefetcher:
         self.index = abs((self.index-1)%len(self.images))
 
 
-defult_settings = {
-    "size": [420,320],
 
-}
 class cameraSettingsSaver:
     """
     a simple class that handles the saving of of camera settings

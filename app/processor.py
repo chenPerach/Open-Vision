@@ -85,4 +85,5 @@ class process:
         
     def end(self):
         cv2.destroyAllWindows()
+        self.cam.close()
         self.sliders.writeHSVvals()
