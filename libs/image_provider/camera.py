@@ -58,7 +58,6 @@ class imagefetcher:
 
     def read(self):
         image_path = self.path.joinpath(self.images[self.index])
-        print(image_path)
         return cv2.imread(image_path.__str__())
 
     def next(self):
