@@ -27,17 +27,16 @@ first you need to understand how to project is structured.
 of the project.
 in the ```run``` method you can just write whatever opencv code you want and it will handle it perfectly
 
-one more thing you should note when writing code is that the function expects you to return a *map* of stuff
-I personaly put images, debug messages and the processing's results.
-that map will be used for farther development. 
+one more thing you should note when writing code is that the function expects you to return a *map* of stuff.
+I personaly put images, debug messages and the processing's results in there and handle them in the ```main.py``` file.
+that map will be used for farther development.
 like streaming these images and slider on a local site
- 
-## TODO
-even though this project is much better then the last one there is still much needed work to be done.
 
-* add a deploy script that will copy the project to a raspberry pi and run it on startup
-* add a script to change the wifi address to a static one at will
-* add a web server that allows to debug and view the image from the robot's wifi
+## TODO
+there's still alot to do in this project
+* add a deploy script that will copy the project to a raspberry pi and run it on startup.
+* add a script to change the ip address of the RPI from dynamic to static or vice versa 
+* add a web server that allows to debug and control the code from the robot.
 
 > this project started as rewrite of [this](https://github.com/chenPerach/vision2019), my first solution to the FRC 2019 vision processing challange, this was my first ever coding challange and I had fun doing it
 
