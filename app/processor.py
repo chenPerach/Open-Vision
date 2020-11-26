@@ -2,11 +2,11 @@ from libs.GUI_UTILS.sliders import Sliders
 from libs.geometry.line import line
 from libs.geometry.point import vector
 from libs.image_provider.camera import *
+from libs.geometry.measurements import measure
 import cv2
 import numpy as np
 import math
 
-fov = 27.7665349671
 tan_frame = math.tan(math.radians(fov))
 tm = 0.325
 class process:
@@ -42,7 +42,7 @@ class process:
         mask_img = cv2.inRange(hsv_img,lower,upper)
         bit_img = cv2.bitwise_and(img,img,mask = mask_img)
 
-        mid_frame  = img.shape[1]/2
+        img_width,img_height = img.shape
 
         contours, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
@@ -60,8 +60,8 @@ class process:
         results = []
         for i in range(0 ,len(filtered_contours)-1, 1):
             # find the middle y value of both rectangles
-            _,y_1,_,h_1 = cv2.boundingRect(filtered_contours[i])
-            _,y_2,_,h_2 = cv2.boundingRect(filtered_contours[i+1])
+            x_1,y_1,w_1,h_1 = cv2.boundingRect(filtered_contours[i])
+            x_2,y_2,w_2,h_2 = cv2.boundingRect(filtered_contours[i+1])
             mid_y  = (y_1+y_2+(h_1+h_2)/2)/2
 
             #get the lines from the contors
@@ -78,13 +78,11 @@ class process:
                 continue
 
             # draw debug stuff
-            cv2.line(bit_img,(int(collision_point.x),int(0)),(int(collision_point.x),int(mid_frame*2)),(255,0,0),2)
+            cv2.line(bit_img,(int(collision_point.x),int(0)),(int(collision_point.x),int(img_height)),(255,0,0),2)
+
+            angles = measure.measure_angle(collision_point,(img_width,img_height),(self.cam.fov,self.cam.fov))
             
-            
-
-
-
-
+            results.append((angles,))
 
         return {
             "images": [

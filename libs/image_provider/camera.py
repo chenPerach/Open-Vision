@@ -55,7 +55,8 @@ class imagefetcher:
         self.index = 0
         self.path = path
         self.images = os.listdir(self.path)
-
+        self.fov = 27.7665349671
+        
     def read(self):
         image_path = self.path.joinpath(self.images[self.index])
         return cv2.imread(image_path.__str__())
