@@ -21,7 +21,7 @@ class Sliders:
                 json.dump({"H min": 0, "H max": 0, "S min": 0, "S max": 0, "V min": 0, "V max": 0},outFile)
             self.vals = json.load(open(self.path)) # and then open the file
         
-        if not self.isPi:
+        if self.isGUI:
             self.createTrackBars()
         
     def writeHSVvals(self):
@@ -29,20 +29,20 @@ class Sliders:
         saves the trackbar data in the file
         '''
         #puts the json thingy in to a txt file
-        if not self.isPi:
-            with open(self.path,"w") as outFile:
-                json.dump(self.vals,outFile)
+        with open(self.path,"w") as outFile:
+            json.dump(self.vals,outFile)
 
     # returns the hsv values to the user
     def getHSV(self):
-        self.vals = { 
-            "H min": cv2.getTrackbarPos("H min", self.winName),
-            "H max": cv2.getTrackbarPos("H max", self.winName),
-            "S min": cv2.getTrackbarPos("S min", self.winName),
-            "S max": cv2.getTrackbarPos("S max", self.winName),
-            "V min": cv2.getTrackbarPos("V min", self.winName),
-            "V max": cv2.getTrackbarPos("V max", self.winName),
-        }
+        if self.isGUI:
+            self.vals = { 
+                "H min": cv2.getTrackbarPos("H min", self.winName),
+                "H max": cv2.getTrackbarPos("H max", self.winName),
+                "S min": cv2.getTrackbarPos("S min", self.winName),
+                "S max": cv2.getTrackbarPos("S max", self.winName),
+                "V min": cv2.getTrackbarPos("V min", self.winName),
+                "V max": cv2.getTrackbarPos("V max", self.winName),
+            }
         Upper = np.array([
             self.vals["H max"],self.vals["S max"],self.vals["V max"]
             ])
