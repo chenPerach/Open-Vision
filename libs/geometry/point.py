@@ -1,10 +1,10 @@
 import math
 class vector:
     def __init__(self,x:float,y:float):
-        self.x
-        self.y
+        self.x = x
+        self.y = y
     
-    def __add__(self,vec:vector):
+    def __add__(self,vec):
         return vector(self.x - vec.x,self.y - vec.y)
     
     def size(self):
@@ -17,5 +17,5 @@ class vector:
     def slope(self):
         return float(y/x)
     
-    def __sub__(self,vec:vector):
+    def __sub__(self,vec):
         return vector(self.x - vec.x,self.y - vec.y)

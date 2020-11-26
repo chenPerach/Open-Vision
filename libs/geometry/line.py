@@ -11,9 +11,10 @@ class line:
         slope = (point1 - point2).slope()
         return cls(point,slope)
     def get_y(self,x):
-        return self.const + self.const*x
-    def find_collision(self,l2:line):
-        x  = (l2.const - self.const)/(self.slope - l2.const)
+        return self.const + self.slope*x
+    def find_collision(self,l2):
+
+        x  = (l2.const - self.const)/(self.slope - l2.slope)
         y = self.get_y(x)
         return vector(x,y)
         
