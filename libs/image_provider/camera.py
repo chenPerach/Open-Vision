@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import math
 import json
+import numpy as np
 defult_settings = {
     "size": [420,320],
     "brightness": 100,
@@ -25,14 +26,25 @@ class camera:
     def is_open(self):
         return self.cap.isOpened()
 
-    def updateSettings(self,settings):
-        self.settings_manager.updateSettings(settings)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,settings["size"][0])
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,settings["size"][0])
+    def updateSettings(self,settings, reload_from_file = False):
+        if reload_from_file:
+            self.settings_manager.reload()
+        else:
+            self.settings_manager.updateSettings(settings)
+        new_settings = self.settings_manager.getSettings()
 
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,int(new_settings["size"][0]))
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,int(new_settings["size"][1]))
+        # self.cap.set(cv2.CAP_PROP_BRIGHTNESS,int(new_settings["brightness"]))
+        # self.cap.set(cv2.CAP_PROP_CONTRAST,int(new_settings["contrast"]))
+        # self.cap.set(cv2.CAP_PROP_GAIN,int(new_settings["gain"]))
+        # self.cap.set(cv2.CAP_PROP_SATURATION,int(new_settings["saturation"]))
+    
     def close(self):
         self.settings_manager.saveSettings()
         self.cap.release()
+
+
 class imagefetcher:
     '''
     imagefetcher class is a small class created to get images out of a directory
@@ -69,6 +81,7 @@ class cameraSettingsSaver:
             with open(self.path,"w") as file:
                 json.dump(defult_settings,file)
             self._settings = json.load(open(self.path))
+            pass
 
     def saveSettings(self):
         with open(self.path,"w") as file:
@@ -77,6 +90,37 @@ class cameraSettingsSaver:
     def getSettings(self):
         return self._settings
 
+    def reload(self):
+        self._settings = json.load(open(self.path))
+
     def updateSettings(self,new_settings):
         self._settings = new_settings
 
+class settingsSliders:
+    def __init__(self,settings_path = "settings.json",isGUI = True):
+        self.settings = cameraSettingsSaver(settings_path)
+        self.winName = "cam settings"
+        self.isGUI = isGUI
+        if(isGUI):
+            self.createTrackBars()
+    
+
+    def createTrackBars(self):
+        # Create a black image, a window
+        img = np.zeros((1 ,1, 3), np.uint8)
+        cv2.namedWindow(self.winName)
+        
+        settings_map = self.settings.getSettings()
+        cv2.createTrackbar("brightness", self.winName, settings_map["brightness"], 255,lambda a: None)
+        cv2.createTrackbar("contrast",   self.winName, settings_map["contrast"], 255,lambda a: None)
+        cv2.createTrackbar("saturation", self.winName, settings_map["saturation"], 255,lambda a: None)
+        cv2.createTrackbar("gain",       self.winName, settings_map["gain"], 255,lambda a: None)
+    def getSettings(self):
+        if self.isGUI:
+            return  {
+                "size": [420,320],
+                "brightness": cv2.getTrackbarPos("brightness",self.winName),
+                "contrast": cv2.getTrackbarPos("contrast",self.winName),
+                "saturation":cv2.getTrackbarPos("saturation",self.winName),
+                "gain": cv2.getTrackbarPos("gain",self.winName),
+            }
