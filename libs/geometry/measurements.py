@@ -59,8 +59,8 @@ class measure:
 
         perpendicular_distance = real_distance/delta.size()
 
-        horizontal_distance = perpendicular_distance*math.cos(angles[0])
-        vertical_distance = perpendicular_distance*math.cos(angles[1])
+        horizontal_distance = perpendicular_distance/math.cos(angles[0])
+        vertical_distance = perpendicular_distance/math.cos(angles[1])
 
         return (horizontal_distance,vertical_distance)
         
