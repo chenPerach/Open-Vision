@@ -11,12 +11,14 @@ defult_settings = {
     "saturation":100,
     "gain":100,
 }
+
 class camera:
     """
     this class handles all the things that belong to the camera in the project
     the fetching of images and settings handling
     """
     def __init__(self,cam_path = 0,settings_path = "settings.json"):
+        self._prev_settings = defult_settings
         self.cap = cv2.VideoCapture(cam_path)
         self.settings_manager = cameraSettingsSaver(settings_path)
         
@@ -32,16 +34,17 @@ class camera:
         else:
             self.settings_manager.updateSettings(settings)
         new_settings = self.settings_manager.getSettings()
+        if self._prev_settings != new_settings:
+            print("setting the settings")
+            ''' this doesn't work currently. may want to try it with a camera that's not built in '''
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,int(new_settings["size"][0])) 
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,int(new_settings["size"][1]))
+            self.cap.set(cv2.CAP_PROP_BRIGHTNESS,int(new_settings["brightness"]))
+            self.cap.set(cv2.CAP_PROP_CONTRAST,int(new_settings["contrast"]))
+            self.cap.set(cv2.CAP_PROP_GAIN,int(new_settings["gain"]))
+            self.cap.set(cv2.CAP_PROP_SATURATION,int(new_settings["saturation"]))
+            self._prev_settings = new_settings
 
-        
-        ''' this doesn't work currently. may want to try it with a camera that's not built in '''
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,int(new_settings["size"][0])) 
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,int(new_settings["size"][1]))
-        self.cap.set(cv2.CAP_PROP_BRIGHTNESS,int(new_settings["brightness"]))
-        self.cap.set(cv2.CAP_PROP_CONTRAST,int(new_settings["contrast"]))
-        self.cap.set(cv2.CAP_PROP_GAIN,int(new_settings["gain"]))
-        self.cap.set(cv2.CAP_PROP_SATURATION,int(new_settings["saturation"]))
-    
     def close(self):
         self.settings_manager.saveSettings()
         self.cap.release()
