@@ -28,24 +28,18 @@ class measure:
     '''
     @staticmethod
     def _normalize_point(p :vector,img_size :tuple,fov :tuple):
-        img_size[0] /= 2
-        img_size[1] /= 2
-
         # find the distance to the center of the image
-        n = (p - vector(img_size[0],img_size[1]))
-
-        #normalize the point
-        n.x /= img_size[0]
-        n.y /= -img_size[1]
+        # normalize the point
+        n = vector((p.x - img_size[0]/2)/(img_size[0]/2),(img_size[1]/2-p.y)/(img_size[1]/2))
 
         
-        vp = vector(math.tan(fov[0]),math.tan(fov[1]))*2
+        vp = vector(math.tan(fov[0]/2),math.tan(fov[1]/2))*2
         # resize according to the fov
-        f = n
-        f.x *= vp.x
-        f.y *= vp.y
+        
+        n.x *= vp.x
+        n.y *= vp.y
 
-        return f
+        return n
 
 
     '''
@@ -60,15 +54,13 @@ class measure:
     def get_distance(p1 :vector,p2:vector,img_size :tuple,fov :tuple,real_distance:float,angles:tuple):
         f1 = measure._normalize_point(p1,img_size,fov)
         f2 = measure._normalize_point(p2,img_size,fov)
-
+        
         delta = f1-f2
-        delta.size()
 
         perpendicular_distance = real_distance/delta.size()
 
-        horizontal_distance = perpendicular_distance*math.tan(angles[0])
-        vertical_distance = perpendicular_distance*math.tan(angles[1])
-
+        horizontal_distance = perpendicular_distance*math.cos(angles[0])
+        vertical_distance = perpendicular_distance*math.cos(angles[1])
 
         return (horizontal_distance,vertical_distance)
         
