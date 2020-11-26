@@ -56,8 +56,8 @@ class process:
         #sort the contours from left to right
         sorted(filtered_contours,key = lambda x: x[1])
         filtered_contours = [cnt[0] for cnt in filtered_contours]
-        cv2.drawContours(bit_img,filtered_contours,-1,(0,0,255),2)
 
+        results = []
         for i in range(0 ,len(filtered_contours)-1, 1):
             # find the middle y value of both rectangles
             _,y_1,_,h_1 = cv2.boundingRect(filtered_contours[i])
@@ -70,7 +70,7 @@ class process:
             l1 = line(vector(x_1,y_1),vy_1/vx_1)
             l2 = line(vector(x_2,y_2),vy_2/vx_2)
 
-            # find point of collision between those points
+            # find point of collision between those lines
             collision_point = l1.find_collision(l2)
             
             # if the collision point is lower then the mid_y then go to next couple of contors
@@ -78,10 +78,10 @@ class process:
                 continue
 
             # draw debug stuff
-            cv2.circle(bit_img,(int(collision_point.x),int(collision_point.y)),2,(255,0,0),3)
             cv2.line(bit_img,(int(collision_point.x),int(0)),(int(collision_point.x),int(mid_frame*2)),(255,0,0),2)
-
             
+            
+
 
 
 
@@ -97,7 +97,8 @@ class process:
                     "image": bit_img    
                 }
             ],
-            "messages":debug_messages
+            "messages": debug_messages,
+            "results": results
         }
 
         
