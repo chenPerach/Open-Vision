@@ -1,89 +1,108 @@
 from libs.GUI_UTILS.sliders import Sliders
+from libs.geometry.line import line
+from libs.geometry.point import vector
 from libs.image_provider.camera import *
 import cv2
 import numpy as np
 import math
-
 
 fov = 27.7665349671
 tan_frame = math.tan(math.radians(fov))
 tm = 0.325
 class process:
     def __init__(self,path,using_camera = True):
-        self.sliders = Sliders(isPi=False,path = path)
+        self.sliders = Sliders(isGUI=True,path = path)
         self.using_cam = using_camera
+        settings_path = Path.joinpath(Path.cwd(),"json","settings.json")
         if(self.using_cam):
-            self.cam = camera(0)
+            self.settingsSlider = settingsSliders(settings_path=settings_path,isGUI=True)
+            self.cam = camera(0,settings_path=settings_path)
         else: 
             self.image_fetcher = imagefetcher(path = Path.joinpath(Path.cwd(),"images"))
 
     
     def run(self):
+
+        debug_messages = []
         if (self.using_cam):
             if(not self.cam.is_open()):
                 print("cam closed. waiting")
                 return # wait until the camera is opened
+
+            self.cam.updateSettings(self.settingsSlider.getSettings())
             img = self.cam.read()
         else:
             img = self.image_fetcher.read() 
-
-        #this line adds a blur effect to the img (it helps with the HSV calibration)
-        frame1 = cv2.GaussianBlur(img,(5,5),cv2.BORDER_DEFAULT)
-
-        #this sesction down scales the img by 60%
-        scale_percent = 60  # percent of original size
-        width = int(img.shape[1] * scale_percent / 100)
-        height = int(img.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        frame = cv2.resize(frame1, dim, interpolation = cv2.INTER_AREA)
-
-        #gets the width of the frame and the middle of the frame
-        _, ABpx, _ = frame.shape
-        midFrame = ABpx/2
-
-        #coverts the photo from BGR to HSV
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV_FULL)
-
-        #the thrid thing that really shouldent bouther you
-        upper, lower = self.sliders.getHSV()
-
-        mask = cv2.inRange(hsv, lower, upper)
-
-        bit = cv2.bitwise_and(frame, frame, mask=mask)
-
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-            
-        # filters the countures by area
-        fillteredCont = []
-        for con in contours:
-            if (cv2.contourArea(con) > 900):
-                fillteredCont.append(con)
-
-        cv2.drawContours(frame, fillteredCont, -1, (0, 0, 255), 3)
-
-        for cnt in fillteredCont:
-            #sorrunds the counturs with a bounding rect and returns the hight width and x,y values of one of the points
-            x,y,w,h = cv2.boundingRect(cnt)
-            #draws a rectangle on screen
-            cv2.rectangle(bit, (x, y), (x + w, y + h), (0, 0, 255), 2)
-            cntMid = x + w/2
-            cv2.line(bit,(int(cntMid),0),(int(cntMid),1000),(0,0,255),3)
-
-            #cal the things
-            tan_alfa = (cntMid - midFrame) * tan_frame / midFrame
-            alfa = math.degrees(math.atan(tan_alfa))
-            d = (0.325 * midFrame) / (2*w * tan_frame)
-            Dfinal = d/math.cos(tan_alfa)
-            print("alfa: " + str(alfa))
-
         
+        img = cv2.resize(img,(420,320),interpolation=cv2.INTER_AREA)
+        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV_FULL)
 
-        cv2.line(bit, (int(midFrame), 0), (int(midFrame), 1000), (0, 255, 0), 3)
-        cv2.imshow("image", frame)
-        cv2.imshow("bit",bit)
+        upper,lower = self.sliders.getHSV()
+
+        mask_img = cv2.inRange(hsv_img,lower,upper)
+        bit_img = cv2.bitwise_and(img,img,mask = mask_img)
+
+        mid_frame  = img.shape[1]/2
+
+        contours, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        filtered_contours = []
+
+        for cnt in contours:
+            if(cv2.contourArea(cnt) > 150):
+                x,y,w,h = cv2.boundingRect(cnt)
+                filtered_contours.append((cnt,x))        
+        
+        #sort the contours from left to right
+        sorted(filtered_contours,key = lambda x: x[1])
+        filtered_contours = [cnt[0] for cnt in filtered_contours]
+        cv2.drawContours(bit_img,filtered_contours,-1,(0,0,255),2)
+
+        for i in range(0 ,len(filtered_contours)-1, 1):
+            # find the middle y value of both rectangles
+            _,y_1,_,h_1 = cv2.boundingRect(filtered_contours[i])
+            _,y_2,_,h_2 = cv2.boundingRect(filtered_contours[i+1])
+            mid_y  = (y_1+y_2+(h_1+h_2)/2)/2
+
+            #get the lines from the contors
+            [vx_1,vy_1,x_1,y_1] = cv2.fitLine(filtered_contours[i], cv2.DIST_L2,0,0.01,0.01)
+            [vx_2,vy_2,x_2,y_2] = cv2.fitLine(filtered_contours[i+1], cv2.DIST_L2,0,0.01,0.01)
+            l1 = line(vector(x_1,y_1),vy_1/vx_1)
+            l2 = line(vector(x_2,y_2),vy_2/vx_2)
+
+            # find point of collision between those points
+            collision_point = l1.find_collision(l2)
+            
+            # if the collision point is lower then the mid_y then go to next couple of contors
+            if collision_point.y >= mid_y: 
+                continue
+
+            # draw debug stuff
+            cv2.circle(bit_img,(int(collision_point.x),int(collision_point.y)),2,(255,0,0),3)
+            cv2.line(bit_img,(int(collision_point.x),int(0)),(int(collision_point.x),int(mid_frame*2)),(255,0,0),2)
+
+            
+
+
+
+
+        return {
+            "images": [
+                {
+                    "title": "image",
+                    "image": img
+                },
+                {
+                    "title": "bit wise image",
+                    "image": bit_img    
+                }
+            ],
+            "messages":debug_messages
+        }
 
         
     def end(self):
         cv2.destroyAllWindows()
-        self.cam.close()
+        if self.using_cam:
+            self.cam.close()
         self.sliders.writeHSVvals()
