@@ -33,12 +33,14 @@ class camera:
             self.settings_manager.updateSettings(settings)
         new_settings = self.settings_manager.getSettings()
 
-        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,int(new_settings["size"][0]))
-        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,int(new_settings["size"][1]))
-        # self.cap.set(cv2.CAP_PROP_BRIGHTNESS,int(new_settings["brightness"]))
-        # self.cap.set(cv2.CAP_PROP_CONTRAST,int(new_settings["contrast"]))
-        # self.cap.set(cv2.CAP_PROP_GAIN,int(new_settings["gain"]))
-        # self.cap.set(cv2.CAP_PROP_SATURATION,int(new_settings["saturation"]))
+        
+        ''' this doesn't work currently. may want to try it with a camera that's not built in '''
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,int(new_settings["size"][0])) 
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,int(new_settings["size"][1]))
+        self.cap.set(cv2.CAP_PROP_BRIGHTNESS,int(new_settings["brightness"]))
+        self.cap.set(cv2.CAP_PROP_CONTRAST,int(new_settings["contrast"]))
+        self.cap.set(cv2.CAP_PROP_GAIN,int(new_settings["gain"]))
+        self.cap.set(cv2.CAP_PROP_SATURATION,int(new_settings["saturation"]))
     
     def close(self):
         self.settings_manager.saveSettings()
@@ -55,7 +57,7 @@ class imagefetcher:
         self.index = 0
         self.path = path
         self.images = os.listdir(self.path)
-        self.fov = 27.7665349671
+        self.fov = (27.7665349671,27.7665349671)
         
     def read(self):
         image_path = self.path.joinpath(self.images[self.index])
@@ -97,6 +99,10 @@ class cameraSettingsSaver:
         self._settings = new_settings
 
 class settingsSliders:
+    """
+    this is a debug class ment to create sliders for changing the camera settings
+    it could be easly removed from the code
+    """
     def __init__(self,settings_path = "settings.json",isGUI = True):
         self.settings = cameraSettingsSaver(settings_path)
         self.winName = "cam settings"

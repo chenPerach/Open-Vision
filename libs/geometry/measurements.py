@@ -1,6 +1,11 @@
 from libs.geometry.point import vector
 import math
 class measure:
+    """
+    this is the class that does all the work
+    
+    handle all the important mathematicl calculations that the program will do
+    """
     '''
     calculates the angle between you and the target
 
